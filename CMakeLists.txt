@@ -5,16 +5,16 @@ project(pal_vision_segmentation)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  stereo_image_proc
   cv_bridge
   dynamic_reconfigure
   geometry_msgs
   image_transport
   roscpp
-  stereo_image_proc
 )
 
 ## System dependencies are found with CMake's conventions
-find_package(OpenCV REQUIRED)
+#find_package(OpenCV REQUIRED)
 
 generate_dynamic_reconfigure_options(
   cfg/DisparitySegment.cfg
@@ -41,48 +41,54 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 
+add_library(${PROJECT_NAME}
+    src/image_processing.cpp
+    src/histogram.cpp)
+
+## Specify libraries to link a library or executable target against
+ target_link_libraries(${PROJECT_NAME}
+   ${catkin_LIBRARIES}
+ )
+
+
 add_executable(disparity_segmentation
     src/disparity_segmentation.cpp)
 add_dependencies(disparity_segmentation
     ${PROJECT_NAME}_gencfg)
+
 target_link_libraries(disparity_segmentation
-    ${catkin_LIBRARIES}
-    ${OpenCV_LIBS})
+    ${PROJECT_NAME})
 
 
 add_executable(template_segmentation
     src/template_segmentation.cpp
     src/image_processing.cpp)
+
 add_dependencies(template_segmentation
     ${PROJECT_NAME}_gencfg)
+
 target_link_libraries(template_segmentation
-    ${catkin_LIBRARIES}
-    ${OpenCV_LIBS})
+    ${PROJECT_NAME})
 
 
-add_library(${PROJECT_NAME}
-    src/image_processing.cpp
-    src/histogram.cpp)
 
 
 add_executable(histogram_segmentation
     src/histogram_segmentation.cpp)
 add_dependencies(histogram_segmentation
     ${PROJECT_NAME}_gencfg)
+
+
 target_link_libraries(histogram_segmentation
-    ${catkin_LIBRARIES}
-    ${OpenCV_LIBS}
-    ${PROJECT_NAME})
+    ${PROJECT_NAME}
+    )
+#    ${OpenCV_LIBS}
 
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(pal_vision_segmentation_node pal_vision_segmentation_generate_messages_cpp)
 
-## Specify libraries to link a library or executable target against
-# target_link_libraries(pal_vision_segmentation_node
-#   ${catkin_LIBRARIES}
-# )
 
 #############
 ## Install ##
