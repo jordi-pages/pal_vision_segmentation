@@ -152,7 +152,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
             cv_bridge::CvImage mask_msg;
             mask_msg.header = msg->header;
             mask_msg.header.stamp = now; //ros::Time::now();
-            mask_msg.encoding = sensor_msgs::image_encodings::TYPE_8UC1;
+            mask_msg.encoding = sensor_msgs::image_encodings::MONO8;
             mask_msg.image = mask;
             mask_pub.publish(mask_msg.toImageMsg());
         }
@@ -174,7 +174,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
         {
             cv_bridge::CvImage debug_msg;
             debug_msg.header = msg->header;
-            debug_msg.encoding = sensor_msgs::image_encodings::TYPE_8UC1;
+            debug_msg.encoding = sensor_msgs::image_encodings::MONO8;
             debug_msg.image = backProject;
             debug_pub.publish(*debug_msg.toImageMsg());
         }
