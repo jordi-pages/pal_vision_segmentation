@@ -42,22 +42,28 @@
   * in histogram_segmentation.cpp and the corresponding cfg file.
   */
 
-#include <boost/filesystem.hpp>
+// PAL headers
+#include <pal_vision_segmentation/HistogramSegmentConfig.h>
+#include <pal_vision_segmentation/image_processing.h>
+#include <pal_vision_segmentation/histogram.h>
 
+// ROS headers
 #include <ros/ros.h>
+#include <ros/callback_queue.h>
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
+#include <dynamic_reconfigure/server.h>
+
+// OpenCV headers
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/video/video.hpp>
 
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
+// Boost headers
+#include <boost/filesystem.hpp>
 
-#include <dynamic_reconfigure/server.h>
-#include <pal_vision_segmentation/HistogramSegmentConfig.h>
-#include <pal_vision_segmentation/image_processing.h>
-#include <pal_vision_segmentation/histogram.h>
 
 /***Variables used in callbacks***/
 image_transport::Publisher mask_pub;
@@ -229,7 +235,7 @@ void computeHistogramFromFile(const std::string& template_path, cv::MatND& hist)
         {
           int i = 0;
           bool found = false;
-          while ( i < hists.size() && !found )
+          while ( i < static_cast<int>(hists.size()) && !found )
           {
            if ( hists[i].at<float>(h, s) > threshold )
            {
@@ -281,5 +287,12 @@ int main(int argc, char *argv[] )
     f = boost::bind(&reconf_callback, _1, _2);
     server.setCallback(f);
 
-    ros::spin();
+    ros::CallbackQueue cbQueue;
+    nh.setCallbackQueue(&cbQueue);
+    ros::Rate rate(10);
+    while ( ros::ok() )
+    {
+      cbQueue.callAvailable();
+      rate.sleep();
+    }
 }
