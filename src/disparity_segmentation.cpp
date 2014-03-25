@@ -238,6 +238,10 @@ int main(int argc, char *argv[] )
 {
     ros::init(argc, argv, "disparity_segmentation");
     ros::NodeHandle nh("disparity_segmentation");
+
+    ros::CallbackQueue cbQueue;
+    nh.setCallbackQueue(&cbQueue);
+
     nh.param<int>("threshold", threshold, 89);
     nh.param<int>("dilate_iterations", dilate_iterations, 9);
     nh.param<int>("dilate_size", dilate_size, 7);
@@ -267,8 +271,6 @@ int main(int argc, char *argv[] )
     f = boost::bind(&reconf_callback, _1, _2);
     server.setCallback(f);
 
-    ros::CallbackQueue cbQueue;
-    nh.setCallbackQueue(&cbQueue);
     ros::Rate rate(10);
     while ( ros::ok() )
     {

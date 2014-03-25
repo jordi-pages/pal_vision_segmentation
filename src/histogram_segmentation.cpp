@@ -258,12 +258,21 @@ int main(int argc, char *argv[] )
 {
     ros::init(argc, argv, "histogram_segmentation"); //initialize with a default name
     ros::NodeHandle nh("~"); //use node name as sufix of the namespace
+
+    ros::CallbackQueue cbQueue;
+    nh.setCallbackQueue(&cbQueue);
+
+    ROS_INFO("Waiting for valid time ...");
+    ros::Time().waitForValid();
+    ROS_INFO("OK");
+
     nh.param<int>("threshold", threshold, 254);
     nh.param<int>("dilate_iterations", dilate_iterations, 9);
     nh.param<int>("dilate_size", dilate_size, 7);
     nh.param<int>("erode_iterations", erode_iterations, 0);
     nh.param<int>("erode_size", erode_size, 3);
     nh.param<int>("dark_pixels_threshold", dark_pixels_threshold, 15);
+
 
     if(argc < 2)
     {
@@ -277,7 +286,11 @@ int main(int argc, char *argv[] )
     computeHistogramFromFile( template_path, target_hist );
 
     image_transport::ImageTransport it(nh);
+
     image_transport::Subscriber rect_sub = it.subscribe("/image", 1, &imageCb);
+
+    ROS_INFO_STREAM("Creating image subscriber to topic " << rect_sub.getTopic());
+
     image_pub = it.advertise("image_masked", 1);
     mask_pub = it.advertise("mask", 1);
     debug_pub = it.advertise("debug",1);
@@ -287,8 +300,6 @@ int main(int argc, char *argv[] )
     f = boost::bind(&reconf_callback, _1, _2);
     server.setCallback(f);
 
-    ros::CallbackQueue cbQueue;
-    nh.setCallbackQueue(&cbQueue);
     ros::Rate rate(10);
     while ( ros::ok() )
     {

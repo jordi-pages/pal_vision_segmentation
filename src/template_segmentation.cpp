@@ -166,6 +166,10 @@ int main(int argc, char *argv[] )
 {
     ros::init(argc, argv, "template_segmentation");
     ros::NodeHandle nh("template_segmentation");
+
+    ros::CallbackQueue cbQueue;
+    nh.setCallbackQueue(&cbQueue);
+
     nh.param<int>("window_width", window_width, 10);
     nh.param<int>("window_height", window_height, 10);
     nh.param<int>("coeffs_to_cancel", coeffs_to_cancel, 2);
@@ -195,8 +199,6 @@ int main(int argc, char *argv[] )
     f = boost::bind(&reconf_callback, _1, _2);
     server.setCallback(f);
 
-    ros::CallbackQueue cbQueue;
-    nh.setCallbackQueue(&cbQueue);
     ros::Rate rate(10);
     while ( ros::ok() )
     {
