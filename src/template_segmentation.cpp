@@ -40,18 +40,22 @@
   * @brief Template matchined based segmentation node
   */
 
-#include <ros/ros.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
+// PAL headers
+#include <pal_vision_segmentation/TemplateSegmentConfig.h>
+#include <pal_vision_segmentation/image_processing.h>
 
+// ROS headers
+#include <ros/ros.h>
+#include <ros/callback_queue.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-
 #include <dynamic_reconfigure/server.h>
-#include <pal_vision_segmentation/TemplateSegmentConfig.h>
-#include <pal_vision_segmentation/image_processing.h>
+
+// OpenCV headers
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 /***Variables used in callbacks***/
 image_transport::Publisher mask_pub;
@@ -162,6 +166,10 @@ int main(int argc, char *argv[] )
 {
     ros::init(argc, argv, "template_segmentation");
     ros::NodeHandle nh("template_segmentation");
+
+    ros::CallbackQueue cbQueue;
+    nh.setCallbackQueue(&cbQueue);
+
     nh.param<int>("window_width", window_width, 10);
     nh.param<int>("window_height", window_height, 10);
     nh.param<int>("coeffs_to_cancel", coeffs_to_cancel, 2);
@@ -191,6 +199,11 @@ int main(int argc, char *argv[] )
     f = boost::bind(&reconf_callback, _1, _2);
     server.setCallback(f);
 
-    ros::spin();
+    ros::Rate rate(10);
+    while ( ros::ok() )
+    {
+      cbQueue.callAvailable();
+      rate.sleep();
+    }
 }
 
